@@ -14,27 +14,47 @@ function lifeDates(p){
 }
 function card(p){
  if(p.unknown)return `<div class="person unknown-person" data-node="${esc(p.id)}" role="img" aria-label="Неизвестный родитель"><span class="portrait">${portrait}</span></div>`;
- return `<button class="person ${p.id===selected?'selected':''}" data-node="${esc(p.id)}" data-person="${esc(p.id)}" aria-pressed="${p.id===selected}"><span class="portrait">${p.photo?`<img src="${esc(p.photo)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>${portrait}</span>`:portrait}</span><span class="person-name">${esc(p.name)}</span><span class="dates">${esc(lifeDates(p))}</span></button>`}
+ return `<button class="person ${p.id===selected&&!p.alias?'selected':''}" data-node="${esc(p.nodeId||p.id)}" data-person="${esc(p.id)}" aria-pressed="${p.id===selected}"><span class="portrait">${p.photo?`<img src="${esc(p.photo)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>${portrait}</span>`:portrait}</span><span class="person-name">${esc(p.name)}</span><span class="dates">${esc(lifeDates(p))}</span></button>`}
 function layout(){
  const root=people.find(p=>p.id===selected), generations=new Map([[selected,0]]);
+ const byId=new Map(people.map(p=>[p.id,p]));
+ const parentOrder=p=>p.parents.map(id=>byId.get(id)).filter(Boolean).sort((a,b)=>(a.gender==='male'?0:1)-(b.gender==='male'?0:1));
+ const ancestryPath=new Map([[root.id,'']]);
+ function markAncestors(person,path,seen=new Set()){
+  if(seen.has(person.id))return;
+  const next=new Set(seen).add(person.id);
+  for(const parent of parentOrder(person)){
+   const branch=path+(parent.gender==='male'?'0':'1');
+   if(!ancestryPath.has(parent.id)||branch<ancestryPath.get(parent.id))ancestryPath.set(parent.id,branch);
+   markAncestors(parent,branch,next);
+  }
+ }
+ markAncestors(root,'');
  // Direct ancestors and descendants are traversed independently to avoid adding cousins.
  function traverse(person,depth,ancestors,seen=new Set()){
   if(seen.has(person.id))return;const nextSeen=new Set(seen).add(person.id);
-  const next=ancestors?people.filter(p=>person.parents.includes(p.id)):people.filter(p=>p.parents.includes(person.id));
+  const next=ancestors?parentOrder(person):people.filter(p=>p.parents.includes(person.id));
   for(const p of next){if(nextSeen.has(p.id))continue;if(!generations.has(p.id))generations.set(p.id,depth);traverse(p,depth+(ancestors?-1:1),ancestors,nextSeen)}
  }
  traverse(root,-1,true);traverse(root,1,false);
- people.filter(p=>root.spouses.includes(p.id)||p.spouses.includes(root.id)||(p.id!==root.id&&p.parents.some(id=>root.parents.includes(id)))).forEach(p=>generations.set(p.id,0));
+ const spouses=people.filter(p=>root.spouses.includes(p.id)||p.spouses.includes(root.id));
+ for(const spouse of spouses){generations.set(spouse.id,0);traverse(spouse,1,false);}
+ people.filter(p=>p.id!==root.id&&p.parents.some(id=>root.parents.includes(id))).forEach(p=>generations.set(p.id,0));
+ // Only the chosen person's own ancestors get expanded. Added partners never
+ // recursively introduce their parents, siblings or other ancestral branches.
+ const eligibleChildren=new Set(generations.keys());
+ for(const spouse of spouses)if(!ancestryPath.has(spouse.id))eligibleChildren.delete(spouse.id);
  // Complete each visible child's parental pair, including an anonymous partner.
  const nodes=new Map(people.map(p=>[p.id,p]));
  visibleFamilies=[];
  const families=new Map();
  for(const child of people){
-  if(!generations.has(child.id)||!child.parents.length)continue;
-  const parents=[...child.parents];
+  if(!eligibleChildren.has(child.id)||!child.parents.length)continue;
+  const parents=parentOrder(child).map(p=>p.id);
   if(parents.length===1){
    const id=`unknown-parent-${parents[0]}`;
-   nodes.set(id,{id,unknown:true});parents.unshift(id);
+   nodes.set(id,{id,unknown:true,gender:byId.get(parents[0]).gender==='male'?'female':'male'});
+   if(byId.get(parents[0]).gender==='male')parents.push(id);else parents.unshift(id);
   }
   const generation=generations.get(child.id)-1;
   for(const id of parents)if(!generations.has(id))generations.set(id,generation);
@@ -48,17 +68,42 @@ function layout(){
  for(const g of rows){
   let row=[...generations.keys()].filter(id=>generations.get(id)===g);
   const previous=orderedRows.get(g-1);
-  if(previous)row.sort((a,b)=>{
+  if(g<0)row.sort((a,b)=>{
+   const aPath=ancestryPath.get(a),bPath=ancestryPath.get(b);
+   if(aPath!==undefined&&bPath!==undefined)return aPath.localeCompare(bPath);
+   const partnerPath=id=>{
+    const family=visibleFamilies.find(f=>f.parents.includes(id));
+    const partner=family?.parents.find(p=>p!==id);
+    return ancestryPath.get(partner)||'';
+   };
+   return (aPath??partnerPath(a)).localeCompare(bPath??partnerPath(b));
+  });
+  if(previous&&g>=0)row.sort((a,b)=>{
    const rank=id=>{const family=visibleFamilies.find(f=>f.children.includes(id));return family?family.parents.reduce((sum,p)=>sum+previous.indexOf(p),0)/family.parents.length:Infinity};
    return rank(a)-rank(b);
   });
   const ordered=[];
   for(const id of row){
    if(ordered.includes(id)||nodes.get(id).unknown)continue;
+   const spouseIds=(nodes.get(id).spouses||[]).filter(other=>row.includes(other)&&!ordered.includes(other));
+   const malePartner=nodes.get(id).gender==='female'?spouseIds.find(other=>nodes.get(other).gender==='male'):null;
+   if(malePartner)ordered.push(malePartner);
    const unknown=`unknown-parent-${id}`;
-   if(row.includes(unknown)&&!ordered.includes(unknown))ordered.push(unknown);
+   // An anonymous partner is placed on the opposite parental side.
+   if(row.includes(unknown)&&nodes.get(unknown).gender==='male')ordered.push(unknown);
    ordered.push(id);
-   for(const spouse of nodes.get(id).spouses||[])if(row.includes(spouse)&&!ordered.includes(spouse))ordered.push(spouse);
+   const duplicateForUnknown=row.includes(unknown)&&nodes.get(unknown).gender==='female'&&spouseIds.length;
+   if(row.includes(unknown)&&nodes.get(unknown).gender==='female'&&!duplicateForUnknown)ordered.push(unknown);
+   for(const spouse of spouseIds)if(!ordered.includes(spouse))ordered.push(spouse);
+   if(duplicateForUnknown){
+    // Repeat the same known parent for a second union instead of drawing a
+    // marriage line through the first partner's card.
+    const alias=`${id}--unknown-union`;
+    nodes.set(alias,{...nodes.get(id),nodeId:alias,alias:true});
+    ordered.push(alias,unknown);
+    const family=visibleFamilies.find(f=>f.parents.includes(id)&&f.parents.includes(unknown));
+    if(family)family.parentNodes=family.parents.map(p=>p===id?alias:p);
+   }
   }
   orderedRows.set(g,ordered);
  }
@@ -120,9 +165,9 @@ function draw(){
  svg.setAttribute('width',tree.offsetWidth);svg.setAttribute('height',tree.offsetHeight);
  const branches=[],marriages=[],paired=new Set();
  const snap=n=>Math.floor(n)+.5;
- function union(ids){
+ function union(ids,nodeIds=ids){
   const key=[...ids].sort().join(':');
-  const pair=ids.map(id=>boxes.get(id)).filter(Boolean).sort((a,b)=>a.x-b.x);
+  const pair=nodeIds.map(id=>boxes.get(id)).filter(Boolean).sort((a,b)=>a.x-b.x);
   if(pair.length!==2||pair[0].y!==pair[1].y)return null;
   const [left,right]=pair,y=snap(left.y+64),x=snap((left.x+left.w+right.x)/2);
   if(!paired.has(key)){
@@ -132,7 +177,7 @@ function draw(){
  }
  const laneCounts=new Map();
  for(const family of visibleFamilies){
-  const origin=union(family.parents);if(!origin)continue;
+  const origin=union(family.parents,family.parentNodes);if(!origin)continue;
   const children=family.children.map(id=>boxes.get(id)).filter(Boolean);if(!children.length)continue;
   const childTop=Math.min(...children.map(c=>c.y));
   const lane=laneCounts.get(childTop)||0;laneCounts.set(childTop,lane+1);
