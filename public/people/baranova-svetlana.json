@@ -1,0 +1,14 @@
+{
+  "id": "baranova-svetlana",
+  "name": "Баранова Светлана Викторовна",
+  "birthDate": "1976-09-01",
+  "deathDate": null,
+  "photo": null,
+  "parents": [
+    "matyushin-viktor",
+    "matyushina-valentina"
+  ],
+  "spouses": [
+    "baranov-sergey"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "baranov-sergey",
+  "name": "Баранов Сергей Александрович",
+  "birthDate": "1973-06-19",
+  "deathDate": null,
+  "photo": null,
+  "parents": [
+    "baranov-alexander",
+    "oshchepkova-natalya"
+  ],
+  "spouses": [
+    "baranova-svetlana"
+  ]
+}

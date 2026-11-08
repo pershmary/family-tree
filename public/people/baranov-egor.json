@@ -1,0 +1,12 @@
+{
+  "id": "baranov-egor",
+  "name": "Баранов Егор Сергеевич",
+  "birthDate": "2009-10-13",
+  "deathDate": null,
+  "photo": null,
+  "parents": [
+    "baranov-sergey",
+    "baranova-svetlana"
+  ],
+  "spouses": []
+}
