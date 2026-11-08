@@ -36,3 +36,8 @@ main { flex: 1; min-height: 0; margin: 0; display: flex; }
 .reset { border-color: var(--accent); }
 .reset:hover, .zoom button:hover { background: #f7f3ff; }
 .person.selected { border-color: var(--accent); }
+.connections .kinship-link {
+  stroke: #777780;
+  opacity: 1;
+  shape-rendering: crispEdges;
+}

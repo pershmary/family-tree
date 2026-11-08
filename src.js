@@ -32,14 +32,19 @@ function layout(){
  }).join('');
  return html;
 }
-function render(){app.innerHTML=`<header><a class="brand" href="./" aria-label="Семейный архив"><span class="brand-symbol" aria-hidden="true">✳︎</span> Семейный архив</a></header><main><section class="tree-section" aria-label="Интерактивное семейное древо"><div class="tree-toolbar"><div class="focus"><span class="status-dot"></span><div><strong>${esc(people.find(p=>p.id===selected).name)}</strong></div></div><button class="reset" id="reset">↺ <span>Вернуться к Марии</span></button></div><div class="viewport" id="viewport" tabindex="0" aria-label="Древо. Прокручивайте для просмотра родственников"><div class="tree" id="tree" style="zoom:${scale}"><svg class="connections" id="connections" aria-hidden="true"></svg><div class="generations">${layout()}</div></div></div><div class="tree-bottom"><span><i class="legend-line"></i> Родство <i class="legend-line marriage"></i> Брак</span><span class="hint">Нажмите на человека, чтобы перестроить древо</span><div class="zoom"><button id="minus" aria-label="Уменьшить">−</button><output>${Math.round(scale*100)}%</output><button id="plus" aria-label="Увеличить">+</button></div></div></section></main>`;
- app.querySelectorAll('[data-person]').forEach(b=>b.onclick=()=>{selected=b.dataset.person;render()});
+function render(origin=null){app.innerHTML=`<header><a class="brand" href="./" aria-label="Семейный архив"><span class="brand-symbol" aria-hidden="true">✳︎</span> Семейный архив</a></header><main><section class="tree-section" aria-label="Интерактивное семейное древо"><div class="tree-toolbar"><div class="focus"><span class="status-dot"></span><div><strong>${esc(people.find(p=>p.id===selected).name)}</strong></div></div><button class="reset" id="reset">↺ <span>Вернуться к Марии</span></button></div><div class="viewport" id="viewport" tabindex="0" aria-label="Древо. Прокручивайте для просмотра родственников"><div class="tree" id="tree" style="zoom:${scale}"><svg class="connections" id="connections" aria-hidden="true"></svg><div class="generations">${layout()}</div></div></div><div class="tree-bottom"><span><i class="legend-line"></i> Родство <i class="legend-line marriage"></i> Брак</span><span class="hint">Нажмите на человека, чтобы перестроить древо</span><div class="zoom"><button id="minus" aria-label="Уменьшить">−</button><output>${Math.round(scale*100)}%</output><button id="plus" aria-label="Увеличить">+</button></div></div></section></main>`;
+ app.querySelectorAll('[data-person]').forEach(b=>b.onclick=()=>{
+  if(selected===b.dataset.person)return;
+  const viewport=document.querySelector('#viewport').getBoundingClientRect(),card=b.getBoundingClientRect();
+  const origin={x:card.left+card.width/2-viewport.left,y:card.top+card.height/2-viewport.top};
+  selected=b.dataset.person;render(origin);
+ });
  document.querySelector('#reset').onclick=()=>{selected='maria';scale=1;render()};
  for(const [id,delta] of [['minus',-.1],['plus',.1]])document.getElementById(id).onclick=()=>{scale=Math.max(.5,Math.min(1.5,Math.round((scale+delta)*10)/10));render()};
- requestAnimationFrame(positionSelection);
+ requestAnimationFrame(()=>positionSelection(origin));
 }
 // Extra canvas space allows even the first/last card to be centered.
-function positionSelection(){
+function positionSelection(origin=null){
  const viewport=document.querySelector('#viewport');
  const tree=document.querySelector('#tree');
  const active=document.querySelector('.person.selected');
@@ -48,14 +53,21 @@ function positionSelection(){
  draw();
  const canvas=viewport.getBoundingClientRect();
  const card=active.getBoundingClientRect();
- viewport.scrollLeft+=card.left+card.width/2-(canvas.left+viewport.clientLeft+viewport.clientWidth/2);
- viewport.scrollTop+=card.top+card.height/2-(canvas.top+viewport.clientTop+viewport.clientHeight/2);
+ const left=viewport.scrollLeft+card.left+card.width/2-(canvas.left+viewport.clientLeft+viewport.clientWidth/2);
+ const top=viewport.scrollTop+card.top+card.height/2-(canvas.top+viewport.clientTop+viewport.clientHeight/2);
+ if(origin&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  viewport.scrollTo({left:left+viewport.clientWidth/2-origin.x,top:top+viewport.clientHeight/2-origin.y,behavior:'instant'});
+  viewport.scrollTo({left,top,behavior:'smooth'});
+ }else viewport.scrollTo({left,top,behavior:'instant'});
 }
 function draw(){const tree=document.querySelector('#tree'),svg=document.querySelector('#connections');if(!tree)return;const boxes=new Map([...tree.querySelectorAll('[data-person]')].map(el=>[el.dataset.person,{x:el.offsetLeft,y:el.offsetTop,w:el.offsetWidth,h:el.offsetHeight}]));
  // Cards use the tree as their offset parent, keeping connections correct at every zoom.
- svg.setAttribute('width',tree.offsetWidth);svg.setAttribute('height',tree.offsetHeight);let paths='';const line=(d,cls='')=>{paths+=`<path d="${d}" class="${cls}"/>`};
+ svg.setAttribute('width',tree.offsetWidth);svg.setAttribute('height',tree.offsetHeight);let paths='',kinship=[];const line=(d,cls='')=>{
+  if(cls)paths+=`<path d="${d}" class="${cls}"/>`;
+  else kinship.push(d.replace(/-?\d+(?:\.\d+)?/g,n=>Math.floor(Number(n))+.5));
+ };
  const paired=new Set();for(const p of people){const a=boxes.get(p.id);if(!a)continue;for(const id of p.spouses){const b=boxes.get(id),key=[p.id,id].sort().join(':');if(!b||a.y!==b.y||paired.has(key))continue;paired.add(key);const left=a.x<b.x?a:b,right=a.x<b.x?b:a;line(`M ${left.x+left.w} ${left.y+64} H ${right.x}`,'marriage-link')}
- const parents=p.parents.map(id=>boxes.get(id)).filter(b=>b&&b.y<a.y);if(parents.length){const x=parents.reduce((s,b)=>s+b.x+b.w/2,0)/parents.length;const y=Math.max(...parents.map(b=>b.y+b.h));for(const b of parents)line(`M ${b.x+b.w/2} ${b.y+b.h} V ${y+28} H ${x}`);line(`M ${x} ${y+28} V ${a.y-26} H ${a.x+a.w/2} V ${a.y}`)}}svg.innerHTML=paths;}
-window.addEventListener('resize',()=>requestAnimationFrame(positionSelection));
+ const parents=p.parents.map(id=>boxes.get(id)).filter(b=>b&&b.y<a.y);if(parents.length){const x=parents.reduce((s,b)=>s+b.x+b.w/2,0)/parents.length;const y=Math.max(...parents.map(b=>b.y+b.h));for(const b of parents)line(`M ${b.x+b.w/2} ${b.y+b.h} V ${y+28} H ${x}`);line(`M ${x} ${y+28} V ${a.y-26} H ${a.x+a.w/2} V ${a.y}`)}}svg.innerHTML=`<path class="kinship-link" d="${[...new Set(kinship)].join(' ')}"/>`+paths;}
+window.addEventListener('resize',()=>requestAnimationFrame(()=>positionSelection()));
 async function load(){const response=await fetch(`${import.meta.env.BASE_URL}people/index.json`);if(!response.ok)throw Error();const ids=await response.json();people=await Promise.all(ids.map(async id=>{const r=await fetch(`${import.meta.env.BASE_URL}people/${encodeURIComponent(id)}.json`);if(!r.ok)throw Error();return r.json()}));render()}
 load().catch(()=>{app.innerHTML='<main><h1>Не удалось загрузить древо</h1><p>Проверьте файлы в public/people и обновите страницу.</p><button onclick="location.reload()">Повторить</button></main>'});
