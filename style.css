@@ -43,3 +43,14 @@ main { flex: 1; min-height: 0; margin: 0; display: flex; }
 }
 .unknown-person { cursor: default; }
 .unknown-person:hover { border-color: #dedee4; box-shadow: 0 3px 5px #24242b06; }
+/* Separate sibling groups and give each family's connector its own lane. */
+.people-row { gap: 80px; }
+.family-group { display: flex; gap: 32px; align-items: stretch; }
+.generations { gap: var(--generation-gap, 132px); }
+.connections .branch-underlay {
+  stroke: #ffffff;
+  stroke-width: 7px;
+  fill: none;
+  stroke-linecap: butt;
+  stroke-linejoin: round;
+}

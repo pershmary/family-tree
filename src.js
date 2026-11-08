@@ -62,7 +62,21 @@ function layout(){
   }
   orderedRows.set(g,ordered);
  }
- return rows.map(g=>`<div class="generation" data-generation="${g}"><div class="people-row">${orderedRows.get(g).map(id=>card(nodes.get(id))).join('')}</div></div>`).join('');
+ return rows.map(g=>{
+  const groups=[];
+  for(const id of orderedRows.get(g)){
+   const person=nodes.get(id);
+   const family=visibleFamilies.find(f=>f.children.includes(id));
+   const partner=person.unknown?id.replace('unknown-parent-',''):null;
+   const partnerFamily=partner?visibleFamilies.find(f=>f.children.includes(partner)):null;
+   const key=family?.key||partnerFamily?.key;
+   const previous=groups.at(-1);
+   const paired=previous?.ids.some(other=>person.spouses?.includes(other)||other===`unknown-parent-${id}`);
+   if(previous&&(previous.key===key||paired))previous.ids.push(id);
+   else groups.push({key,ids:[id]});
+  }
+  return `<div class="generation" data-generation="${g}"><div class="people-row">${groups.map(group=>`<div class="family-group">${group.ids.map(id=>card(nodes.get(id))).join('')}</div>`).join('')}</div></div>`;
+ }).join('');
 }
 
 function render(origin=null){app.innerHTML=`<header><a class="brand" href="./" aria-label="Семейный архив"><span class="brand-symbol" aria-hidden="true">✳︎</span> Семейный архив</a></header><main><section class="tree-section" aria-label="Интерактивное семейное древо"><div class="tree-toolbar"><div class="focus"><span class="status-dot"></span><div><strong>${esc(people.find(p=>p.id===selected).name)}</strong></div></div><button class="reset" id="reset">↺ <span>Вернуться к Марии</span></button></div><div class="viewport" id="viewport" tabindex="0" aria-label="Древо. Прокручивайте для просмотра родственников"><div class="tree" id="tree" style="zoom:${scale}"><svg class="connections" id="connections" aria-hidden="true"></svg><div class="generations">${layout()}</div></div></div><div class="tree-bottom"><span><i class="legend-line"></i> Родство <i class="legend-line marriage"></i> Брак</span><span class="hint">Нажмите на человека, чтобы перестроить древо</span><div class="zoom"><button id="minus" aria-label="Уменьшить">−</button><output>${Math.round(scale*100)}%</output><button id="plus" aria-label="Увеличить">+</button></div></div></section></main>`;
@@ -82,6 +96,13 @@ function positionSelection(origin=null){
  const tree=document.querySelector('#tree');
  const active=document.querySelector('.person.selected');
  if(!viewport||!tree||!active)return;
+ const familyCounts=new Map();
+ for(const family of visibleFamilies){
+  const child=document.querySelector(`[data-person="${family.children[0]}"]`);
+  const generation=child?.closest('[data-generation]').dataset.generation;
+  familyCounts.set(generation,(familyCounts.get(generation)||0)+1);
+ }
+ tree.style.setProperty('--generation-gap',`${Math.max(100,...[...familyCounts.values()].map(n=>n*18+48))}px`);
  tree.style.padding=`${viewport.clientHeight/2/scale}px ${viewport.clientWidth/2/scale}px`;
  draw();
  const canvas=viewport.getBoundingClientRect();
@@ -97,7 +118,7 @@ function draw(){
  const tree=document.querySelector('#tree'),svg=document.querySelector('#connections');if(!tree)return;
  const boxes=new Map([...tree.querySelectorAll('[data-node]')].map(el=>[el.dataset.node,{x:el.offsetLeft,y:el.offsetTop,w:el.offsetWidth,h:el.offsetHeight}]));
  svg.setAttribute('width',tree.offsetWidth);svg.setAttribute('height',tree.offsetHeight);
- const kinship=[],marriages=[],paired=new Set();
+ const branches=[],marriages=[],paired=new Set();
  const snap=n=>Math.floor(n)+.5;
  function union(ids){
   const key=[...ids].sort().join(':');
@@ -109,18 +130,25 @@ function draw(){
   }
   return {x,y};
  }
+ const laneCounts=new Map();
  for(const family of visibleFamilies){
   const origin=union(family.parents);if(!origin)continue;
   const children=family.children.map(id=>boxes.get(id)).filter(Boolean);if(!children.length)continue;
-  const bus=snap(Math.min(...children.map(c=>c.y))-28);
+  const childTop=Math.min(...children.map(c=>c.y));
+  const lane=laneCounts.get(childTop)||0;laneCounts.set(childTop,lane+1);
+  const bus=snap(childTop-28-lane*18);
+  const kinship=[];
   const centers=children.map(c=>snap(c.x+c.w/2));
   kinship.push(`M ${origin.x} ${origin.y} V ${bus}`);
   kinship.push(`M ${Math.min(origin.x,...centers)} ${bus} H ${Math.max(origin.x,...centers)}`);
   for(const child of children)kinship.push(`M ${snap(child.x+child.w/2)} ${bus} V ${snap(child.y)}`);
+  const d=[...new Set(kinship)].join(' ');
+  // A white underlay makes crossings between separate families unambiguous.
+  branches.push(`<g data-family="${esc(family.key)}"><path class="branch-underlay" d="${d}"/><path class="kinship-link" d="${d}"/></g>`);
  }
  // Couples without visible children still have a marriage line.
  for(const p of people)for(const id of p.spouses)if(boxes.has(p.id)&&boxes.has(id))union([p.id,id]);
- svg.innerHTML=`<path class="kinship-link" d="${[...new Set(kinship)].join(' ')}"/>`+marriages.join('');
+ svg.innerHTML=branches.join('')+marriages.join('');
 }
 window.addEventListener('resize',()=>requestAnimationFrame(()=>positionSelection()));
 async function load(){const response=await fetch(`${import.meta.env.BASE_URL}people/index.json`);if(!response.ok)throw Error();const ids=await response.json();people=await Promise.all(ids.map(async id=>{const r=await fetch(`${import.meta.env.BASE_URL}people/${encodeURIComponent(id)}.json`);if(!r.ok)throw Error();return r.json()}));render()}
