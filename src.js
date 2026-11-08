@@ -260,5 +260,5 @@ function draw(){
  svg.innerHTML=branches.join('')+marriages.join('');
 }
 window.addEventListener('resize',()=>requestAnimationFrame(()=>positionSelection()));
-async function load(){const response=await fetch(`${import.meta.env.BASE_URL}people/index.json`);if(!response.ok)throw Error();const ids=await response.json();people=await Promise.all(ids.map(async id=>{const r=await fetch(`${import.meta.env.BASE_URL}people/${encodeURIComponent(id)}.json`);if(!r.ok)throw Error();return r.json()}));render()}
+async function load(){const response=await fetch(`${import.meta.env.BASE_URL}people/index.json?v=${__PEOPLE_VERSION__}`);if(!response.ok)throw Error();const ids=await response.json();people=await Promise.all(ids.map(async id=>{const r=await fetch(`${import.meta.env.BASE_URL}people/${encodeURIComponent(id)}.json?v=${__PEOPLE_VERSION__}`);if(!r.ok)throw Error();return r.json()}));render()}
 load().catch(()=>{app.innerHTML='<main><h1>Не удалось загрузить древо</h1><p>Проверьте файлы в public/people и обновите страницу.</p><button onclick="location.reload()">Повторить</button></main>'});
