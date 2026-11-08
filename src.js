@@ -105,6 +105,18 @@ function layout(){
     if(family)family.parentNodes=family.parents.map(p=>p===id?alias:p);
    }
   }
+  if(g===0){
+   // The focus row follows navigation order; ancestor rows retain father/mother order.
+   const prefix=[];
+   const anonymous=`unknown-parent-${root.id}`;
+   const aliases=ordered.filter(id=>nodes.get(id).alias&&nodes.get(id).id===root.id);
+   if(aliases.length&&ordered.includes(anonymous))prefix.push(...aliases,anonymous);
+   prefix.push(...spouses.map(p=>p.id).filter(id=>ordered.includes(id)));
+   if(!prefix.includes(anonymous)&&ordered.includes(anonymous))prefix.push(anonymous);
+   prefix.push(root.id);
+   const rest=ordered.filter(id=>!prefix.includes(id));
+   ordered.splice(0,ordered.length,...prefix,...rest);
+  }
   orderedRows.set(g,ordered);
  }
  return rows.map(g=>{
