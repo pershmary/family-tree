@@ -41,3 +41,5 @@ main { flex: 1; min-height: 0; margin: 0; display: flex; }
   opacity: 1;
   shape-rendering: crispEdges;
 }
+.unknown-person { cursor: default; }
+.unknown-person:hover { border-color: #dedee4; box-shadow: 0 3px 5px #24242b06; }
