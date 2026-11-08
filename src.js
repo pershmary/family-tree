@@ -136,14 +136,13 @@ function layout(){
  }).join('');
 }
 
-function render(origin=null){app.innerHTML=`<header><a class="brand" href="./" aria-label="Семейный архив"><span class="brand-symbol" aria-hidden="true">✳︎</span> Семейный архив</a></header><main><section class="tree-section" aria-label="Интерактивное семейное древо"><div class="tree-toolbar"><div class="focus"><span class="status-dot"></span><div><strong>${esc(people.find(p=>p.id===selected).name)}</strong></div></div><button class="reset" id="reset">↺ <span>Вернуться к Марии</span></button></div><div class="viewport" id="viewport" tabindex="0" aria-label="Древо. Прокручивайте для просмотра родственников"><div class="tree" id="tree" style="zoom:${scale}"><svg class="connections" id="connections" aria-hidden="true"></svg><div class="generations">${layout()}</div></div></div><div class="tree-bottom"><span><i class="legend-line"></i> Родство <i class="legend-line marriage"></i> Брак</span><span class="hint">Нажмите на человека, чтобы перестроить древо</span><div class="zoom"><button id="minus" aria-label="Уменьшить">−</button><output>${Math.round(scale*100)}%</output><button id="plus" aria-label="Увеличить">+</button></div></div></section></main>`;
+function render(origin=null){app.innerHTML=`<header><a class="brand" href="./" aria-label="Семейный архив"><span class="brand-symbol" aria-hidden="true">✳︎</span> Семейный архив</a><div class="focus" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><strong>${esc(people.find(p=>p.id===selected).name)}</strong></div></header><main><section class="tree-section" aria-label="Интерактивное семейное древо"><div class="viewport" id="viewport" tabindex="0" aria-label="Древо. Прокручивайте для просмотра родственников"><div class="tree" id="tree" style="zoom:${scale}"><svg class="connections" id="connections" aria-hidden="true"></svg><div class="generations">${layout()}</div></div></div><div class="tree-bottom"><span><i class="legend-line"></i> Родство <i class="legend-line marriage"></i> Брак</span><span class="hint">Нажмите на человека, чтобы перестроить древо</span><div class="zoom"><button id="minus" aria-label="Уменьшить">−</button><output>${Math.round(scale*100)}%</output><button id="plus" aria-label="Увеличить">+</button></div></div></section></main>`;
  app.querySelectorAll('[data-person]').forEach(b=>b.onclick=()=>{
   if(selected===b.dataset.person)return;
   const viewport=document.querySelector('#viewport').getBoundingClientRect(),card=b.getBoundingClientRect();
   const origin={x:card.left+card.width/2-viewport.left,y:card.top+card.height/2-viewport.top};
   selected=b.dataset.person;render(origin);
  });
- document.querySelector('#reset').onclick=()=>{selected='maria';scale=1;render()};
  for(const [id,delta] of [['minus',-.1],['plus',.1]])document.getElementById(id).onclick=()=>{scale=Math.max(.5,Math.min(1.5,Math.round((scale+delta)*10)/10));render()};
  requestAnimationFrame(()=>positionSelection(origin));
 }
