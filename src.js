@@ -66,7 +66,8 @@ function setupPersonPicker(){
 }
 function card(p){
  if(p.unknown)return `<div class="person unknown-person" data-node="${esc(p.id)}" role="img" aria-label="Неизвестный родитель"><span class="portrait">${portrait}</span></div>`;
- return `<button class="person ${p.id===selected&&!p.alias?'selected':''}" data-node="${esc(p.nodeId||p.id)}" data-person="${esc(p.id)}" aria-pressed="${p.id===selected}">${avatar(p)}<span class="person-name">${esc(p.name)}</span><span class="dates">${esc(lifeDates(p))}</span></button>`}
+ const [surname, givenName, ...patronymic]=p.name.trim().split(/\s+/);
+ return `<button class="person ${p.id===selected&&!p.alias?'selected':''}" data-node="${esc(p.nodeId||p.id)}" data-person="${esc(p.id)}" aria-pressed="${p.id===selected}">${avatar(p)}<span class="person-name"><span class="person-surname">${esc(surname)}</span><span class="person-given-names"><span>${esc(givenName||'')}</span><span>${esc(patronymic.join(' '))}</span></span></span><span class="dates">${esc(lifeDates(p))}</span></button>`}
 function layout(){
  const root=people.find(p=>p.id===selected), generations=new Map([[selected,0]]);
  const byId=new Map(people.map(p=>[p.id,p]));

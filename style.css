@@ -132,3 +132,10 @@ header .picker-trigger {
   .picker-chevron { width: 12px; height: 12px; }
   .picker-popup { top: 54px; right: 12px; }
 }
+
+/* Align dates below a surname row and three reserved name rows. */
+.person-name { width: 142px; min-height: 0; flex-shrink: 0; }
+.person-surname { display: block; white-space: nowrap; }
+.person-given-names { display: block; min-height: 3.9em; }
+.person-given-names > span { display: block; }
+.person > .portrait { flex-shrink: 0; }
