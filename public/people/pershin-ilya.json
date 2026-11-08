@@ -3,10 +3,11 @@
   "name": "Першин Илья Дмитриевич",
   "birthDate": "1997-03-02",
   "deathDate": null,
-  "photo": "/photos/pershin-ilya.jpg",
+  "photo": "/photos/thumbnails/pershin-ilya.webp",
   "parents": [],
   "spouses": [
     "maria"
   ],
-  "gender": "male"
+  "gender": "male",
+  "photoFull": "/photos/full/pershin-ilya.jpg"
 }

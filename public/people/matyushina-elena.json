@@ -10,5 +10,6 @@
   ],
   "deceased": true,
   "deathYear": 2009,
-  "gender": "female"
+  "gender": "female",
+  "photoFull": null
 }

@@ -3,7 +3,7 @@
   "name": "Першина Мария Сергеевна",
   "birthDate": "1997-01-04",
   "deathDate": null,
-  "photo": "/photos/maria.jpg",
+  "photo": "/photos/thumbnails/maria.webp",
   "parents": [
     "baranov-sergey",
     "baranova-svetlana"
@@ -11,5 +11,6 @@
   "spouses": [
     "pershin-ilya"
   ],
-  "gender": "female"
+  "gender": "female",
+  "photoFull": "/photos/full/maria.jpg"
 }
