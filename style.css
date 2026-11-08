@@ -139,3 +139,5 @@ header .picker-trigger {
 .person-given-names { display: block; min-height: 3.9em; }
 .person-given-names > span { display: block; }
 .person > .portrait { width: 72px; height: 72px; flex-shrink: 0; }
+
+.connections path { stroke: #dedee4; }
