@@ -37,7 +37,7 @@ main { flex: 1; min-height: 0; margin: 0; display: flex; }
 .reset:hover, .zoom button:hover { background: #f7f3ff; }
 .person.selected { border-color: var(--accent); }
 .connections .kinship-link {
-  stroke: #777780;
+  stroke: #dedee4;
   opacity: 1;
   shape-rendering: crispEdges;
 }
@@ -140,4 +140,4 @@ header .picker-trigger {
 .person-given-names > span { display: block; }
 .person > .portrait { width: 72px; height: 72px; flex-shrink: 0; }
 
-.connections path { stroke: #dedee4; }
+.legend-line:not(.marriage) { border-color: #dedee4; }
