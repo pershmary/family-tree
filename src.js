@@ -4,7 +4,15 @@ const portrait = `<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><circl
 let people=[], selected='maria', scale=1;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=s=>s ? new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(s)) : 'Дата рождения не указана';
-function card(p){return `<button class="person ${p.id===selected?'selected':''}" data-person="${esc(p.id)}" aria-pressed="${p.id===selected}"><span class="portrait">${p.photo?`<img src="${esc(p.photo)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>${portrait}</span>`:portrait}</span><span class="person-name">${esc(p.name)}</span><span class="dates">${esc(date(p.birthDate))}${p.deathDate?`<br>Умер(ла) ${esc(date(p.deathDate))}`:p.deceased?`<br>Умер(ла) ${p.deathYear?esc(p.deathYear)+' г.':'— дата неизвестна'}`:''}</span>${p.id===selected?'':'<span class="person-tag">Выбрать человека</span>'}</button>`}
+const shortDate=s=>s ? new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(new Date(s)) : '??.??.????';
+function lifeDates(p){
+ if(p.deathDate||p.deceased){
+  const end=p.deathDate?shortDate(p.deathDate):`??.??.${p.deathYear||'????'}`;
+  return `${shortDate(p.birthDate)}-${end}`;
+ }
+ return date(p.birthDate);
+}
+function card(p){return `<button class="person ${p.id===selected?'selected':''}" data-person="${esc(p.id)}" aria-pressed="${p.id===selected}"><span class="portrait">${p.photo?`<img src="${esc(p.photo)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>${portrait}</span>`:portrait}</span><span class="person-name">${esc(p.name)}</span><span class="dates">${esc(lifeDates(p))}</span></button>`}
 function layout(){
  const root=people.find(p=>p.id===selected), generations=new Map([[selected,0]]);
  // Direct ancestors and descendants are traversed independently to avoid adding cousins.
