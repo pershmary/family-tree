@@ -3,7 +3,7 @@
   "name": "Першина Мария Сергеевна",
   "birthDate": "1997-01-04",
   "deathDate": null,
-  "photo": null,
+  "photo": "/photos/maria.jpg",
   "parents": [
     "baranov-sergey",
     "baranova-svetlana"
