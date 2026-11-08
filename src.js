@@ -12,9 +12,61 @@ function lifeDates(p){
  }
  return date(p.birthDate);
 }
+function avatar(p){
+ const photo=p.photo&&(/^(https?:|data:|blob:)/.test(p.photo)||p.photo.startsWith(import.meta.env.BASE_URL)?p.photo:`${import.meta.env.BASE_URL}${p.photo.replace(/^\//,'')}`);
+ return `<span class="portrait">${p.photo?`<img src="${esc(photo)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>${portrait}</span>`:portrait}</span>`;
+}
+function personPicker(){
+ const person=people.find(p=>p.id===selected);
+ return `<div class="person-picker"><button class="focus picker-trigger" id="person-picker-trigger" popovertarget="person-picker-popup" aria-label="Выбрать родственника: ${esc(person.name)}">${avatar(person)}<strong>${esc(person.name)}</strong><svg class="picker-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button><div id="person-picker-popup" class="picker-popup" popover role="dialog" aria-label="Выбор родственника"><label class="picker-search-label" for="person-search">Найти родственника</label><input id="person-search" class="picker-search" type="search" placeholder="Поиск по имени или фамилии" autocomplete="off"><ul id="person-results" class="picker-results" aria-label="Родственники"></ul><p id="person-empty" class="picker-empty" role="status" hidden>Никого не найдено</p></div></div>`;
+}
+function setupPersonPicker(){
+ const popup=document.querySelector('#person-picker-popup');
+ const search=document.querySelector('#person-search');
+ const results=document.querySelector('#person-results');
+ const normalize=text=>text.toLocaleLowerCase('ru').replace(/ё/g,'е').trim();
+ const sorted=[...people].sort((a,b)=>a.name.localeCompare(b.name,'ru',{sensitivity:'base'}));
+ function filter(){
+  const words=normalize(search.value).split(/\s+/).filter(Boolean);
+  const matches=sorted.filter(p=>words.every(word=>normalize(p.name).includes(word)));
+  results.innerHTML=matches.map(p=>`<li><button class="picker-option" data-choice="${esc(p.id)}" ${p.id===selected?'aria-current="true"':''}>${avatar(p)}<span>${esc(p.name)}</span>${p.id===selected?'<span class="picker-check" aria-hidden="true">✓</span>':''}</button></li>`).join('');
+  document.querySelector('#person-empty').hidden=matches.length>0;
+ }
+ filter();search.addEventListener('input',filter);
+ popup.addEventListener('beforetoggle',event=>{
+  if(event.newState==='open'){search.value='';filter();}
+ });
+ popup.addEventListener('toggle',()=>{
+  if(popup.matches(':popover-open'))search.focus();
+ });
+ results.addEventListener('click',event=>{
+  const button=event.target.closest('[data-choice]');if(!button)return;
+  if(selected===button.dataset.choice){popup.hidePopover();document.querySelector('#person-picker-trigger').focus();return;}
+  const viewport=document.querySelector('#viewport');
+  const canvas=viewport.getBoundingClientRect();
+  const visibleCard=[...document.querySelectorAll('[data-person]')].find(el=>el.dataset.person===button.dataset.choice);
+  const rect=visibleCard?.getBoundingClientRect();
+  const origin=rect&&rect.top>=canvas.top&&rect.bottom<=canvas.bottom?{x:rect.left+rect.width/2-canvas.left,y:rect.top+rect.height/2-canvas.top}:{x:viewport.clientWidth/2,y:viewport.clientHeight/2+Math.min(120,viewport.clientHeight/4)};
+  selected=button.dataset.choice;render(origin);
+  document.querySelector('#person-picker-trigger').focus({preventScroll:true});
+ });
+ popup.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){
+   event.preventDefault();event.stopPropagation();popup.hidePopover();
+   document.querySelector('#person-picker-trigger').focus();return;
+  }
+  const options=[...results.querySelectorAll('button')];
+  const index=options.indexOf(document.activeElement);
+  if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+   event.preventDefault();
+   const next=event.key==='ArrowDown'?Math.min(options.length-1,index+1):Math.max(0,index-1);
+   options[next]?.focus();
+  }
+ });
+}
 function card(p){
  if(p.unknown)return `<div class="person unknown-person" data-node="${esc(p.id)}" role="img" aria-label="Неизвестный родитель"><span class="portrait">${portrait}</span></div>`;
- return `<button class="person ${p.id===selected&&!p.alias?'selected':''}" data-node="${esc(p.nodeId||p.id)}" data-person="${esc(p.id)}" aria-pressed="${p.id===selected}"><span class="portrait">${p.photo?`<img src="${esc(p.photo)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>${portrait}</span>`:portrait}</span><span class="person-name">${esc(p.name)}</span><span class="dates">${esc(lifeDates(p))}</span></button>`}
+ return `<button class="person ${p.id===selected&&!p.alias?'selected':''}" data-node="${esc(p.nodeId||p.id)}" data-person="${esc(p.id)}" aria-pressed="${p.id===selected}">${avatar(p)}<span class="person-name">${esc(p.name)}</span><span class="dates">${esc(lifeDates(p))}</span></button>`}
 function layout(){
  const root=people.find(p=>p.id===selected), generations=new Map([[selected,0]]);
  const byId=new Map(people.map(p=>[p.id,p]));
@@ -136,7 +188,8 @@ function layout(){
  }).join('');
 }
 
-function render(origin=null){app.innerHTML=`<header><a class="brand" href="./" aria-label="Семейный архив"><span class="brand-symbol" aria-hidden="true">✳︎</span> Семейный архив</a><div class="focus" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><strong>${esc(people.find(p=>p.id===selected).name)}</strong></div></header><main><section class="tree-section" aria-label="Интерактивное семейное древо"><div class="viewport" id="viewport" tabindex="0" aria-label="Древо. Прокручивайте для просмотра родственников"><div class="tree" id="tree" style="zoom:${scale}"><svg class="connections" id="connections" aria-hidden="true"></svg><div class="generations">${layout()}</div></div></div><div class="tree-bottom"><span><i class="legend-line"></i> Родство <i class="legend-line marriage"></i> Брак</span><span class="hint">Нажмите на человека, чтобы перестроить древо</span><div class="zoom"><button id="minus" aria-label="Уменьшить">−</button><output>${Math.round(scale*100)}%</output><button id="plus" aria-label="Увеличить">+</button></div></div></section></main>`;
+function render(origin=null){app.innerHTML=`<header><a class="brand" href="./" aria-label="Семейный архив"><span class="brand-symbol" aria-hidden="true">✳︎</span> Семейный архив</a>${personPicker()}</header><main><section class="tree-section" aria-label="Интерактивное семейное древо"><div class="viewport" id="viewport" tabindex="0" aria-label="Древо. Прокручивайте для просмотра родственников"><div class="tree" id="tree" style="zoom:${scale}"><svg class="connections" id="connections" aria-hidden="true"></svg><div class="generations">${layout()}</div></div></div><div class="tree-bottom"><span><i class="legend-line"></i> Родство <i class="legend-line marriage"></i> Брак</span><span class="hint">Нажмите на человека, чтобы перестроить древо</span><div class="zoom"><button id="minus" aria-label="Уменьшить">−</button><output>${Math.round(scale*100)}%</output><button id="plus" aria-label="Увеличить">+</button></div></div></section></main>`;
+ setupPersonPicker();
  app.querySelectorAll('[data-person]').forEach(b=>b.onclick=()=>{
   if(selected===b.dataset.person)return;
   const viewport=document.querySelector('#viewport').getBoundingClientRect(),card=b.getBoundingClientRect();

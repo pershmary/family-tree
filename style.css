@@ -87,3 +87,48 @@ header .focus strong { line-height: 1.4; }
 header { border-bottom: 1px solid #e2e2e6; }
 
 .tree-bottom { background: #ffffff; border: 0; }
+
+.person-picker { margin-left: auto; min-width: 0; max-width: 55%; }
+header .picker-trigger {
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  padding: 5px 8px;
+  max-width: 100%;
+  gap: 10px;
+}
+.picker-trigger:hover { background: #f7f3ff; }
+.picker-trigger .portrait, .picker-option .portrait { width: 34px; height: 34px; margin: 0; flex-shrink: 0; }
+.picker-trigger .portrait svg, .picker-option .portrait svg { width: 29px; height: 29px; }
+.picker-chevron { width: 16px; height: 16px; stroke: #606068; stroke-width: 1.5; flex-shrink: 0; }
+.picker-popup {
+  position: fixed;
+  inset: 66px 20px auto auto;
+  margin: 0;
+  padding: 16px;
+  width: min(380px, calc(100vw - 24px));
+  max-height: calc(100dvh - 82px);
+  overflow: auto;
+  background: #ffffff;
+  color: #333333;
+  border: 1px solid #e2e2e6;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px #24242b1a;
+}
+.picker-search-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.picker-search { width: 100%; padding: 11px 12px; font: inherit; font-size: 13px; color: #333333; border: 1px solid #dedee4; border-radius: 6px; background: #ffffff; }
+.picker-search:focus-visible { outline: 2px solid #7A37FF; outline-offset: 1px; }
+.picker-results { list-style: none; padding: 0; margin: 12px 0 0; max-height: min(420px, calc(100dvh - 200px)); overflow-y: auto; }
+.picker-option { border: 0; background: #ffffff; padding: 9px 8px; width: 100%; display: flex; gap: 10px; align-items: center; border-radius: 6px; text-align: left; font-size: 13px; line-height: 1.4; }
+.picker-option:hover, .picker-option:focus-visible, .picker-option[aria-current="true"] { background: #f7f3ff; }
+.picker-option:focus-visible { outline-offset: -2px; }
+.picker-check { color: #7A37FF; margin-left: auto; }
+.picker-empty { font-size: 13px; color: #606068; padding: 12px 0; text-align: center; }
+@media (max-width: 650px) {
+  .person-picker { max-width: 52%; }
+  header .picker-trigger { max-width: 100%; gap: 5px; padding: 4px 0; }
+  .picker-trigger .portrait { width: 28px; height: 28px; }
+  .picker-trigger .portrait svg { width: 24px; height: 24px; }
+  .picker-chevron { width: 12px; height: 12px; }
+  .picker-popup { top: 54px; right: 12px; }
+}
