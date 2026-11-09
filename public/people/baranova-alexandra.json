@@ -1,0 +1,13 @@
+{
+  "id": "baranova-alexandra",
+  "name": "Баранова Александра Матвеевна",
+  "birthDate": "1895-05-14",
+  "deathDate": "1979-08-11",
+  "photo": null,
+  "photoFull": null,
+  "parents": [],
+  "spouses": [
+    "baranov-nikolay"
+  ],
+  "gender": "female"
+}

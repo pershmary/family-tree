@@ -4,7 +4,10 @@
   "birthDate": "1927-06-23",
   "deathDate": "2019-10-01",
   "photo": null,
-  "parents": [],
+  "parents": [
+    "baranov-nikolay",
+    "baranova-alexandra"
+  ],
   "spouses": [
     "baranov-sergey-senior"
   ],

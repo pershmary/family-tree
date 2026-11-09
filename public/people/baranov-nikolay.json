@@ -1,0 +1,13 @@
+{
+  "id": "baranov-nikolay",
+  "name": "Баранов Николай",
+  "birthDate": null,
+  "deathDate": null,
+  "photo": null,
+  "photoFull": null,
+  "parents": [],
+  "spouses": [
+    "baranova-alexandra"
+  ],
+  "gender": "male"
+}
