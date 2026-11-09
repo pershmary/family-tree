@@ -1,0 +1,14 @@
+{
+  "id": "lunev-nikita",
+  "name": "Лунев Никита",
+  "birthDate": null,
+  "deathDate": null,
+  "photo": null,
+  "photoFull": null,
+  "parents": [
+    "luneva-maria"
+  ],
+  "spouses": [],
+  "gender": "male",
+  "birthYear": 1996
+}

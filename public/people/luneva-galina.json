@@ -1,0 +1,13 @@
+{
+  "id": "luneva-galina",
+  "name": "Лунева Галина",
+  "birthDate": null,
+  "deathDate": null,
+  "photo": null,
+  "photoFull": null,
+  "parents": [],
+  "spouses": [
+    "lunev-viktor"
+  ],
+  "gender": "female"
+}

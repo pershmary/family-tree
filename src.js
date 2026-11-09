@@ -8,9 +8,9 @@ const shortDate=s=>s ? new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-d
 function lifeDates(p){
  if(p.deathDate||p.deceased){
   const end=p.deathDate?shortDate(p.deathDate):`??.??.${p.deathYear||'????'}`;
-  return `${shortDate(p.birthDate)}-${end}`;
+  return `${p.birthDate?shortDate(p.birthDate):`??.??.${p.birthYear||'????'}`}-${end}`;
  }
- return date(p.birthDate);
+ return p.birthDate?date(p.birthDate):p.birthYear?`${p.birthYear} г.`:date(null);
 }
 function avatar(p){
  const photo=p.photo&&(/^(https?:|data:|blob:)/.test(p.photo)||p.photo.startsWith(import.meta.env.BASE_URL)?p.photo:`${import.meta.env.BASE_URL}${p.photo.replace(/^\//,'')}`);
