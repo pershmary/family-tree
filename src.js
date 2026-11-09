@@ -91,7 +91,7 @@ function layout(){
  }
  traverse(root,-1,true);traverse(root,1,false);
  const spouses=people.filter(p=>root.spouses.includes(p.id)||p.spouses.includes(root.id));
- for(const spouse of spouses){generations.set(spouse.id,0);traverse(spouse,1,false);}
+ for(const spouse of spouses)generations.set(spouse.id,0);
  people.filter(p=>p.id!==root.id&&p.parents.some(id=>root.parents.includes(id))).forEach(p=>generations.set(p.id,0));
  // Only the chosen person's own ancestors get expanded. Added partners never
  // recursively introduce their parents, siblings or other ancestral branches.
