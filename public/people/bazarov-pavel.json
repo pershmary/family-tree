@@ -1,0 +1,14 @@
+{
+  "id": "bazarov-pavel",
+  "name": "Базаров Павел Дмитриевич",
+  "birthDate": null,
+  "deathDate": null,
+  "photo": null,
+  "photoFull": null,
+  "parents": [
+    "bazarov-dmitry",
+    "bazarova-lyubov"
+  ],
+  "spouses": [],
+  "gender": "male"
+}

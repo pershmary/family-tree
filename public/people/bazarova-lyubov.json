@@ -1,0 +1,16 @@
+{
+  "id": "bazarova-lyubov",
+  "name": "Базарова Любовь Викторовна",
+  "birthDate": null,
+  "deathDate": null,
+  "photo": null,
+  "photoFull": null,
+  "parents": [
+    "kharchenko-viktor",
+    "kharchenko-lyudmila"
+  ],
+  "spouses": [
+    "bazarov-dmitry"
+  ],
+  "gender": "female"
+}

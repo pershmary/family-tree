@@ -1,0 +1,16 @@
+{
+  "id": "kharchenko-konstantin",
+  "name": "Харченко Константин Викторович",
+  "birthDate": null,
+  "deathDate": null,
+  "photo": null,
+  "photoFull": null,
+  "parents": [
+    "kharchenko-viktor",
+    "kharchenko-lyudmila"
+  ],
+  "spouses": [
+    "kharchenko-elena"
+  ],
+  "gender": "male"
+}
