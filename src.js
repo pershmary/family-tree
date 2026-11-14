@@ -26,7 +26,7 @@ function openPhoto(id,trigger){
  const dialog=document.createElement('dialog');
  dialog.className='photo-viewer';
  dialog.setAttribute('aria-label',`Фотография: ${person.name}`);
- dialog.innerHTML=`<button class="photo-close" aria-label="Закрыть фотографию" autofocus>×</button><img class="photo-large" alt="${esc(person.name)}">`;
+ dialog.innerHTML=`<button class="photo-close" aria-label="Закрыть фотографию" autofocus>×</button><img class="photo-large" alt="${esc(person.name)}"><p class="photo-caption">${esc(person.name)}</p>`;
  document.body.append(dialog);
  dialog.querySelector('img').src=url;
  dialog.querySelector('button').onclick=()=>dialog.close();
