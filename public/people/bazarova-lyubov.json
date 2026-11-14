@@ -3,8 +3,8 @@
   "name": "Базарова Любовь Викторовна",
   "birthDate": "1981-07-30",
   "deathDate": null,
-  "photo": null,
-  "photoFull": null,
+  "photo": "/photos/thumbnails/bazarova-lyubov-4a38c4e533.webp",
+  "photoFull": "/photos/full/bazarova-lyubov-4a38c4e533.png",
   "parents": [
     "kharchenko-viktor",
     "kharchenko-lyudmila"

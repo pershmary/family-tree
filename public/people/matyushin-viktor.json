@@ -3,7 +3,7 @@
   "name": "Матюшин Виктор Александрович",
   "birthDate": "1952-11-29",
   "deathDate": null,
-  "photo": null,
+  "photo": "/photos/thumbnails/matyushin-viktor-8b608d0159.webp",
   "parents": [
     "matyushin-alexander-senior",
     "matyushina-elena"
@@ -12,5 +12,5 @@
     "matyushina-valentina"
   ],
   "gender": "male",
-  "photoFull": null
+  "photoFull": "/photos/full/matyushin-viktor-8b608d0159.png"
 }

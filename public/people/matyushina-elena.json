@@ -3,7 +3,7 @@
   "name": "Матюшина Елена Самсоновна",
   "birthDate": "1926-05-20",
   "deathDate": null,
-  "photo": null,
+  "photo": "/photos/thumbnails/matyushina-elena-5b0f18bc51.webp",
   "parents": [],
   "spouses": [
     "matyushin-alexander-senior"
@@ -11,5 +11,5 @@
   "deceased": true,
   "deathYear": 2009,
   "gender": "female",
-  "photoFull": null
+  "photoFull": "/photos/full/matyushina-elena-5b0f18bc51.jpg"
 }

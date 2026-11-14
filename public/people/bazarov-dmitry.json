@@ -3,8 +3,8 @@
   "name": "Базаров Дмитрий",
   "birthDate": null,
   "deathDate": null,
-  "photo": null,
-  "photoFull": null,
+  "photo": "/photos/thumbnails/bazarov-dmitry-1e6d0ce7d4.webp",
+  "photoFull": "/photos/full/bazarov-dmitry-1e6d0ce7d4.png",
   "parents": [],
   "spouses": [
     "bazarova-lyubov"

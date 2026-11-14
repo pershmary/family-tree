@@ -3,7 +3,7 @@
   "name": "Матюшин Дмитрий Викторович",
   "birthDate": "1984-09-29",
   "deathDate": null,
-  "photo": null,
+  "photo": "/photos/thumbnails/matyushin-dmitry-fbcf93244b.webp",
   "parents": [
     "matyushin-viktor",
     "matyushina-valentina"
@@ -12,5 +12,5 @@
     "matyushina-olga"
   ],
   "gender": "male",
-  "photoFull": null
+  "photoFull": "/photos/full/matyushin-dmitry-fbcf93244b.png"
 }

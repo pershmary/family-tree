@@ -3,7 +3,7 @@
   "name": "Баранова Светлана Викторовна",
   "birthDate": "1976-09-01",
   "deathDate": null,
-  "photo": "/photos/thumbnails/baranova-svetlana.webp",
+  "photo": "/photos/thumbnails/baranova-svetlana-1f14bc85e2.webp",
   "parents": [
     "matyushin-viktor",
     "matyushina-valentina"
@@ -12,5 +12,5 @@
     "baranov-sergey"
   ],
   "gender": "female",
-  "photoFull": "/photos/full/baranova-svetlana.png"
+  "photoFull": "/photos/full/baranova-svetlana-1f14bc85e2.jpg"
 }
