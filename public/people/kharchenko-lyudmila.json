@@ -3,7 +3,7 @@
   "name": "Харченко Людмила Александровна",
   "birthDate": null,
   "deathDate": null,
-  "photo": null,
+  "photo": "/photos/thumbnails/kharchenko-lyudmila-08a00f3a7f.webp",
   "parents": [
     "matyushin-alexander-senior",
     "matyushina-elena"
@@ -12,5 +12,5 @@
     "kharchenko-viktor"
   ],
   "gender": "female",
-  "photoFull": null
+  "photoFull": "/photos/full/kharchenko-lyudmila-08a00f3a7f.png"
 }
