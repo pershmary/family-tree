@@ -126,13 +126,13 @@ function layout(){
  const families=new Map();
  for(const child of people){
   if(!eligibleChildren.has(child.id)||!child.parents.length)continue;
-  const parents=parentOrder(child).map(p=>p.id);
-  if(parents.length===1){
+  const generation=generations.get(child.id)-1;
+  const parents=parentOrder(child).map(p=>p.id).filter(id=>generation<=0||eligibleChildren.has(id));
+  if(parents.length===1&&generation<=0){
    const id=`unknown-parent-${parents[0]}`;
    nodes.set(id,{id,unknown:true,gender:byId.get(parents[0]).gender==='male'?'female':'male'});
    if(byId.get(parents[0]).gender==='male')parents.push(id);else parents.unshift(id);
   }
-  const generation=generations.get(child.id)-1;
   for(const id of parents)if(!generations.has(id))generations.set(id,generation);
   const key=[...parents].sort().join(':');
   if(!families.has(key))families.set(key,{key,parents,children:[]});
@@ -265,7 +265,8 @@ function draw(){
  }
  const laneCounts=new Map();
  for(const family of visibleFamilies){
-  const origin=union(family.parents,family.parentNodes);if(!origin)continue;
+  const single=family.parents.length===1?boxes.get(family.parents[0]):null;
+  const origin=single?{x:snap(single.x+single.w/2),y:snap(single.y+single.h)}:union(family.parents,family.parentNodes);if(!origin)continue;
   const children=family.children.map(id=>boxes.get(id)).filter(Boolean);if(!children.length)continue;
   const childTop=Math.min(...children.map(c=>c.y));
   const lane=laneCounts.get(childTop)||0;laneCounts.set(childTop,lane+1);
