@@ -155,7 +155,7 @@ function layout(){
    return (aPath??partnerPath(a)).localeCompare(bPath??partnerPath(b));
   });
   if(previous&&g>=0)row.sort((a,b)=>{
-   const rank=id=>{const family=visibleFamilies.find(f=>f.children.includes(id));return family?family.parents.reduce((sum,p)=>sum+previous.indexOf(p),0)/family.parents.length:Infinity};
+   const rank=id=>{const family=visibleFamilies.find(f=>f.children.includes(id));return family?(family.parentNodes||family.parents).reduce((sum,p)=>sum+previous.indexOf(p),0)/family.parents.length:Infinity};
    return rank(a)-rank(b);
   });
   const ordered=[];
@@ -180,18 +180,6 @@ function layout(){
     const family=visibleFamilies.find(f=>f.parents.includes(id)&&f.parents.includes(unknown));
     if(family)family.parentNodes=family.parents.map(p=>p===id?alias:p);
    }
-  }
-  if(g===0){
-   // The focus row follows navigation order; ancestor rows retain father/mother order.
-   const prefix=[];
-   const anonymous=`unknown-parent-${root.id}`;
-   const aliases=ordered.filter(id=>nodes.get(id).alias&&nodes.get(id).id===root.id);
-   if(aliases.length&&ordered.includes(anonymous))prefix.push(...aliases,anonymous);
-   prefix.push(...spouses.map(p=>p.id).filter(id=>ordered.includes(id)));
-   if(!prefix.includes(anonymous)&&ordered.includes(anonymous))prefix.push(anonymous);
-   prefix.push(root.id);
-   const rest=ordered.filter(id=>!prefix.includes(id));
-   ordered.splice(0,ordered.length,...prefix,...rest);
   }
   orderedRows.set(g,ordered);
  }
@@ -224,6 +212,44 @@ function render(origin=null){app.innerHTML=`<header><a class="brand" href="./" a
  requestAnimationFrame(()=>positionSelection(origin));
 }
 // Extra canvas space allows even the first/last card to be centered.
+function arrangeDescendants(){
+ const tree=document.querySelector('#tree');
+ const rows=[...tree.querySelectorAll('[data-generation]')].filter(row=>Number(row.dataset.generation)>0);
+ if(!rows.length)return;
+ const cards=new Map(rows.flatMap(row=>[...row.querySelectorAll('[data-node]')].map(card=>[card.dataset.node,card])));
+ const children=new Map();
+ for(const family of visibleFamilies){
+  const parent=family.parents.find(id=>cards.has(id));
+  if(parent)children.set(parent,[...(children.get(parent)||[]),...family.children.filter(id=>cards.has(id))]);
+ }
+ const widths=new Map();
+ const width=id=>{
+  if(widths.has(id))return widths.get(id);
+  const kids=[...new Set(children.get(id)||[])];
+  const value=Math.max(cards.get(id).offsetWidth,kids.reduce((sum,k)=>sum+width(k),0)+Math.max(0,kids.length-1)*32);
+  widths.set(id,value);return value;
+ };
+ const roots=[...rows[0].querySelectorAll('[data-node]')].map(card=>card.dataset.node);
+ const total=roots.reduce((sum,id)=>sum+width(id),0)+Math.max(0,roots.length-1)*80;
+ const positions=new Map();
+ function place(id,left){
+  positions.set(id,left+(width(id)-cards.get(id).offsetWidth)/2);
+  const kids=[...new Set(children.get(id)||[])];
+  const span=kids.reduce((sum,k)=>sum+width(k),0)+Math.max(0,kids.length-1)*32;
+  let cursor=left+(width(id)-span)/2;
+  for(const child of kids){place(child,cursor);cursor+=width(child)+32;}
+ }
+ let cursor=0;
+ for(const id of roots){place(id,cursor);cursor+=width(id)+80;}
+ for(const row of rows){
+  const line=row.querySelector('.people-row');
+  line.style.cssText=`display:block;position:relative;width:${total}px;height:${Math.max(...[...line.querySelectorAll('[data-node]')].map(card=>card.offsetHeight))}px`;
+  for(const group of line.querySelectorAll('.family-group'))group.style.display='contents';
+  for(const card of line.querySelectorAll('[data-node]')){
+   card.style.position='absolute';card.style.top='0';card.style.left=`${positions.get(card.dataset.node)}px`;
+  }
+ }
+}
 function positionSelection(origin=null){
  const viewport=document.querySelector('#viewport');
  const tree=document.querySelector('#tree');
@@ -237,6 +263,7 @@ function positionSelection(origin=null){
  }
  tree.style.setProperty('--generation-gap',`${Math.max(100,...[...familyCounts.values()].map(n=>n*18+48))}px`);
  tree.style.padding=`${viewport.clientHeight/2/scale}px ${viewport.clientWidth/2/scale}px`;
+ arrangeDescendants();
  draw();
  const canvas=viewport.getBoundingClientRect();
  const card=active.getBoundingClientRect();
@@ -249,7 +276,8 @@ function positionSelection(origin=null){
 }
 function draw(){
  const tree=document.querySelector('#tree'),svg=document.querySelector('#connections');if(!tree)return;
- const boxes=new Map([...tree.querySelectorAll('[data-node]')].map(el=>[el.dataset.node,{x:el.offsetLeft,y:el.offsetTop,w:el.offsetWidth,h:el.offsetHeight}]));
+ const canvas=tree.getBoundingClientRect();
+ const boxes=new Map([...tree.querySelectorAll('[data-node]')].map(el=>{const r=el.getBoundingClientRect();return [el.dataset.node,{x:(r.left-canvas.left)/scale,y:(r.top-canvas.top)/scale,w:el.offsetWidth,h:el.offsetHeight}]}));
  svg.setAttribute('width',tree.offsetWidth);svg.setAttribute('height',tree.offsetHeight);
  const branches=[],marriages=[],paired=new Set();
  const snap=n=>Math.floor(n)+.5;
