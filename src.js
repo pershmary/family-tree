@@ -12,10 +12,33 @@ function lifeDates(p){
  }
  return p.birthDate?date(p.birthDate):p.birthYear?`${p.birthYear} г.`:date(null);
 }
-function avatar(p){
+function avatar(p,zoomable=false){
  const photo=p.photo&&(/^(https?:|data:|blob:)/.test(p.photo)||p.photo.startsWith(import.meta.env.BASE_URL)?p.photo:`${import.meta.env.BASE_URL}${p.photo.replace(/^\//,'')}`);
- return `<span class="portrait">${p.photo?`<img src="${esc(photo)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>${portrait}</span>`:portrait}</span>`;
+ const zoom=zoomable&&p.photo;
+ return `${zoom?`<button type="button" class="portrait photo-trigger" data-photo="${esc(p.id)}" aria-label="Открыть фото: ${esc(p.name)}">`:'<span class="portrait">'}${p.photo?`<img src="${esc(photo)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>${portrait}</span>`:portrait}${zoom?'<span class="photo-shade" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg></span></button>':'</span>'}`;
 }
+
+function openPhoto(id,trigger){
+ const person=people.find(p=>p.id===id);
+ if(!person?.photo)return;
+ const path=person.photoFull||person.photo;
+ const url=/^(https?:|data:|blob:)/.test(path)||path.startsWith(import.meta.env.BASE_URL)?path:`${import.meta.env.BASE_URL}${path.replace(/^\//,'')}`;
+ const dialog=document.createElement('dialog');
+ dialog.className='photo-viewer';
+ dialog.setAttribute('aria-label',`Фотография: ${person.name}`);
+ dialog.innerHTML=`<button class="photo-close" aria-label="Закрыть фотографию" autofocus>×</button><img class="photo-large" alt="${esc(person.name)}"><p>${esc(person.name)}</p>`;
+ document.body.append(dialog);
+ dialog.querySelector('img').src=url;
+ dialog.querySelector('button').onclick=()=>dialog.close();
+ dialog.onclick=event=>{if(event.target===dialog)dialog.close()};
+ dialog.addEventListener('close',()=>{dialog.remove();trigger?.focus()},{once:true});
+ dialog.showModal();
+}
+app.addEventListener('click',event=>{
+ const trigger=event.target.closest('[data-photo]');
+ if(trigger){event.stopPropagation();openPhoto(trigger.dataset.photo,trigger)}
+},true);
+
 function personPicker(){
  const person=people.find(p=>p.id===selected);
  return `<div class="person-picker"><button class="focus picker-trigger" id="person-picker-trigger" popovertarget="person-picker-popup" aria-label="Выбрать родственника: ${esc(person.name)}">${avatar(person)}<strong>${esc(person.name)}</strong><svg class="picker-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button><div id="person-picker-popup" class="picker-popup" popover role="dialog" aria-label="Выбор родственника"><label class="picker-search-label" for="person-search">Найти родственника</label><input id="person-search" class="picker-search" type="search" placeholder="Поиск по имени или фамилии" autocomplete="off"><ul id="person-results" class="picker-results" aria-label="Родственники"></ul><p id="person-empty" class="picker-empty" role="status" hidden>Никого не найдено</p></div></div>`;
@@ -67,7 +90,7 @@ function setupPersonPicker(){
 function card(p){
  if(p.unknown)return `<div class="person unknown-person" data-node="${esc(p.id)}" role="img" aria-label="Неизвестный родитель"><span class="portrait">${portrait}</span></div>`;
  const [surname, givenName, ...patronymic]=p.name.trim().split(/\s+/);
- return `<button class="person ${p.id===selected&&!p.alias?'selected':''}" data-node="${esc(p.nodeId||p.id)}" data-person="${esc(p.id)}" aria-pressed="${p.id===selected}">${avatar(p)}<span class="person-name"><span class="person-surname">${esc(surname)}</span><span class="person-given-names"><span>${esc(givenName||'')}</span><span>${esc(patronymic.join(' '))}</span></span></span><span class="dates">${esc(lifeDates(p))}</span></button>`}
+ return `<div class="person ${p.id===selected&&!p.alias?'selected':''}" data-node="${esc(p.nodeId||p.id)}" data-person="${esc(p.id)}" >${avatar(p,true)}<button class="person-details" aria-pressed="${p.id===selected}"><span class="person-name"><span class="person-surname">${esc(surname)}</span><span class="person-given-names"><span>${esc(givenName||'')}</span><span>${esc(patronymic.join(' '))}</span></span></span><span class="dates">${esc(lifeDates(p))}</span></button></div>`}
 function layout(){
  const root=people.find(p=>p.id===selected), generations=new Map([[selected,0]]);
  const byId=new Map(people.map(p=>[p.id,p]));
