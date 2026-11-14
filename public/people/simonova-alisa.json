@@ -1,0 +1,13 @@
+{
+  "id": "simonova-alisa",
+  "name": "Симонова Алиса Радиевна",
+  "birthDate": null,
+  "deathDate": null,
+  "photo": null,
+  "photoFull": null,
+  "parents": [
+    "simonov-radiy"
+  ],
+  "spouses": [],
+  "gender": "female"
+}
