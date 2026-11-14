@@ -3,11 +3,11 @@
   "name": "Баранов Андрей Константинович",
   "birthDate": null,
   "deathDate": null,
-  "photo": null,
+  "photo": "/photos/thumbnails/baranov-andrey.webp",
   "parents": [
     "baranov-konstantin"
   ],
   "spouses": [],
   "gender": "male",
-  "photoFull": null
+  "photoFull": "/photos/full/baranov-andrey.png"
 }

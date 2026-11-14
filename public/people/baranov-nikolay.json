@@ -3,8 +3,8 @@
   "name": "Баранов Николай",
   "birthDate": null,
   "deathDate": null,
-  "photo": null,
-  "photoFull": null,
+  "photo": "/photos/thumbnails/baranov-nikolay.webp",
+  "photoFull": "/photos/full/baranov-nikolay.png",
   "parents": [],
   "spouses": [
     "baranova-alexandra"

@@ -3,11 +3,11 @@
   "name": "Баранов Сергей Александрович",
   "birthDate": "1926-05-25",
   "deathDate": "1970-04-30",
-  "photo": null,
+  "photo": "/photos/thumbnails/baranov-sergey-senior.webp",
   "parents": [],
   "spouses": [
     "baranova-raisa"
   ],
   "gender": "male",
-  "photoFull": null
+  "photoFull": "/photos/full/baranov-sergey-senior.png"
 }

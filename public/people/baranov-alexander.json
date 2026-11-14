@@ -3,7 +3,7 @@
   "name": "Баранов Александр Сергеевич",
   "birthDate": "1954-01-19",
   "deathDate": "1994-05-01",
-  "photo": null,
+  "photo": "/photos/thumbnails/baranov-alexander.webp",
   "parents": [
     "baranov-sergey-senior",
     "baranova-raisa"
@@ -12,5 +12,5 @@
     "oshchepkova-natalya"
   ],
   "gender": "male",
-  "photoFull": null
+  "photoFull": "/photos/full/baranov-alexander.png"
 }

@@ -3,8 +3,8 @@
   "name": "Баранов Николай Сергеевич",
   "birthDate": "1952-02-15",
   "deathDate": "2005-07-01",
-  "photo": null,
-  "photoFull": null,
+  "photo": "/photos/thumbnails/baranov-nikolay-sergeevich.webp",
+  "photoFull": "/photos/full/baranov-nikolay-sergeevich.png",
   "parents": [
     "baranov-sergey-senior",
     "baranova-raisa"

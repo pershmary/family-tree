@@ -3,12 +3,12 @@
   "name": "Баранов Алексей Александрович",
   "birthDate": "1981-09-11",
   "deathDate": null,
-  "photo": null,
+  "photo": "/photos/thumbnails/baranov-alexey.webp",
   "parents": [
     "baranov-alexander"
   ],
   "spouses": [],
   "notes": "Ребёнок Баранова Александра Сергеевича от второго брака. Мать неизвестна.",
   "gender": "male",
-  "photoFull": null
+  "photoFull": "/photos/full/baranov-alexey.png"
 }

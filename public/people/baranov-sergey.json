@@ -3,7 +3,7 @@
   "name": "Баранов Сергей Александрович",
   "birthDate": "1973-06-19",
   "deathDate": null,
-  "photo": "/photos/thumbnails/baranov-sergey.webp",
+  "photo": "/photos/thumbnails/baranov-sergey-5a67cb1847.webp",
   "parents": [
     "baranov-alexander",
     "oshchepkova-natalya"
@@ -12,5 +12,5 @@
     "baranova-svetlana"
   ],
   "gender": "male",
-  "photoFull": "/photos/full/baranov-sergey.png"
+  "photoFull": "/photos/full/baranov-sergey-5a67cb1847.jpg"
 }

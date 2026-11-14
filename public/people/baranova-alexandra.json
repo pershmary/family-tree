@@ -3,8 +3,8 @@
   "name": "Баранова Александра Матвеевна",
   "birthDate": "1895-05-14",
   "deathDate": "1979-08-11",
-  "photo": null,
-  "photoFull": null,
+  "photo": "/photos/thumbnails/baranova-alexandra.webp",
+  "photoFull": "/photos/full/baranova-alexandra.png",
   "parents": [],
   "spouses": [
     "baranov-nikolay"

@@ -3,7 +3,7 @@
   "name": "Баранова Раиса Николаевна",
   "birthDate": "1927-06-23",
   "deathDate": "2019-10-01",
-  "photo": null,
+  "photo": "/photos/thumbnails/baranova-raisa.webp",
   "parents": [
     "baranov-nikolay",
     "baranova-alexandra"
@@ -12,5 +12,5 @@
     "baranov-sergey-senior"
   ],
   "gender": "female",
-  "photoFull": null
+  "photoFull": "/photos/full/baranova-raisa.png"
 }
