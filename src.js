@@ -35,7 +35,14 @@ function openPhoto(id,trigger){
  dialog.showModal();
 }
 function biographyMarkup(text){
- return text.trim().split(/\n\s*\n/).map(block=>{
+ const blocks=text.trim().split(/\n\s*\n/);
+ let title='';
+ if(/^#\s+/.test(blocks[0])){
+  const heading=blocks.shift().replace(/^#\s+/,'');
+  const subtitle=/^\*[^\n]+\*$/.test(blocks[0]||'')?blocks.shift().slice(1,-1):'';
+  title=`<div class="biography-heading"><h3>${esc(heading)}</h3>${subtitle?`<span>${esc(subtitle)}</span>`:''}</div>`;
+ }
+ return title+blocks.map(block=>{
   const heading=block.match(/^#{1,6}\s+([^\n]+)$/);
   if(heading)return `<h4>${esc(heading[1])}</h4>`;
   if(/^\*[^\n]+\*$/.test(block))return `<p><em>${esc(block.slice(1,-1))}</em></p>`;
@@ -45,15 +52,15 @@ function biographyMarkup(text){
 function openDetails(id,trigger){
  const person=people.find(p=>p.id===id);
  if(!person?.biography?.trim())return;
- const year=(value,fallback)=>value?value.slice(0,4):fallback||'????';
- const born=year(person.birthDate,person.birthYear);
- const years=person.deathDate||person.deathYear||person.deceased?`${born} — ${year(person.deathDate,person.deathYear)}`:born==='????'?'Год рождения неизвестен':`${born} — н. в.`;
+ const born=person.birthDate?date(person.birthDate):person.birthYear?`${person.birthYear} г.`:'Дата рождения неизвестна';
+ const died=person.deathDate?date(person.deathDate):person.deathYear?`${person.deathYear} г.`:'Дата смерти неизвестна';
+ const years=person.deathDate||person.deathYear||person.deceased?`${born} — ${died}`:born;
  const path=person.photoFull||person.photo;
  const photo=path&&(/^(https?:|data:|blob:)/.test(path)||path.startsWith(import.meta.env.BASE_URL)?path:`${import.meta.env.BASE_URL}${path.replace(/^\//,'')}`);
  const dialog=document.createElement('dialog');
  dialog.className='relative-panel';
  dialog.setAttribute('aria-labelledby','relative-panel-name');
- dialog.innerHTML=`<button type="button" class="relative-panel-close" aria-label="Закрыть подробную информацию" autofocus>×</button>${photo?`<img class="relative-panel-photo" src="${esc(photo)}" alt="${esc(person.name)}">`:`<div class="relative-panel-placeholder" role="img" aria-label="Фото отсутствует">${portrait}</div>`}<div class="relative-panel-content"><h2 id="relative-panel-name">${esc(person.name)}</h2><p class="relative-panel-years">${esc(years)}</p><section class="relative-panel-biography" aria-labelledby="relative-panel-biography-title"><h3 id="relative-panel-biography-title">Биография</h3>${biographyMarkup(person.biography)}</section></div>`;
+ dialog.innerHTML=`<button type="button" class="relative-panel-close" aria-label="Закрыть подробную информацию" autofocus>×</button>${photo?`<img class="relative-panel-photo" src="${esc(photo)}" alt="${esc(person.name)}">`:`<div class="relative-panel-placeholder" role="img" aria-label="Фото отсутствует">${portrait}</div>`}<div class="relative-panel-content"><h2 id="relative-panel-name">${esc(person.name)}</h2><p class="relative-panel-years">${esc(years)}</p><section class="relative-panel-biography" aria-label="Биография">${biographyMarkup(person.biography)}</section></div>`;
  document.body.append(dialog);
  const image=dialog.querySelector('img');
  if(image)image.onerror=()=>{image.outerHTML=`<div class="relative-panel-placeholder" role="img" aria-label="Фото недоступно">${portrait}</div>`};
