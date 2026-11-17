@@ -49,6 +49,45 @@ function biographyMarkup(text){
   return `<p>${esc(block)}</p>`;
  }).join('');
 }
+function setupBiographyContents(dialog){
+ const headings=[...dialog.querySelectorAll('.relative-panel-biography h4')];
+ if(!headings.length)return;
+ headings.forEach((heading,index)=>{heading.id=`biography-section-${index}`;heading.tabIndex=-1;});
+ const nav=document.createElement('nav');
+ nav.className='biography-toc';
+ nav.setAttribute('aria-label','Оглавление очерка');
+ nav.innerHTML=`<button type="button" class="biography-toc-trigger" aria-label="Оглавление очерка" aria-expanded="false" aria-controls="biography-toc-list">${headings.map(()=>'<span aria-hidden="true"></span>').join('')}</button><div class="biography-toc-panel" id="biography-toc-list" inert><p>Оглавление</p><ol>${headings.map((heading,index)=>`<li><button type="button" data-section="${index}" aria-controls="${heading.id}">${esc(heading.textContent)}</button></li>`).join('')}</ol></div>`;
+ dialog.append(nav);
+ const toggle=nav.querySelector('.biography-toc-trigger');
+ const panel=nav.querySelector('.biography-toc-panel');
+ const items=[...panel.querySelectorAll('button')];
+ const marks=[...toggle.querySelectorAll('span')];
+ const setOpen=open=>{nav.classList.toggle('is-open',open);toggle.setAttribute('aria-expanded',String(open));panel.inert=!open;};
+ nav.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')setOpen(true);});
+ nav.addEventListener('pointerleave',()=>{if(!nav.contains(document.activeElement))setOpen(false);});
+ toggle.onclick=()=>setOpen(!nav.classList.contains('is-open'));
+ nav.addEventListener('focusout',event=>{if(!nav.contains(event.relatedTarget))setOpen(false);});
+ nav.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&nav.classList.contains('is-open')){event.preventDefault();event.stopPropagation();setOpen(false);toggle.focus();}
+ });
+ items.forEach((item,index)=>item.onclick=()=>{
+  const heading=headings[index];
+  const top=dialog.scrollTop+heading.getBoundingClientRect().top-dialog.getBoundingClientRect().top-24;
+  dialog.scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  setOpen(false);heading.focus({preventScroll:true});
+ });
+ const update=()=>{
+  const top=dialog.getBoundingClientRect().top+80;
+  let active=0;
+  headings.forEach((heading,index)=>{if(heading.getBoundingClientRect().top<=top)active=index;});
+  if(dialog.scrollTop+dialog.clientHeight>=dialog.scrollHeight-2)active=headings.length-1;
+  items.forEach((item,index)=>{if(index===active)item.setAttribute('aria-current','location');else item.removeAttribute('aria-current');marks[index].classList.toggle('is-active',index===active);});
+ };
+ let frame;
+ dialog.addEventListener('scroll',()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(update);},{passive:true});
+ dialog.addEventListener('close',()=>cancelAnimationFrame(frame),{once:true});
+ update();
+}
 function openDetails(id,trigger){
  const person=people.find(p=>p.id===id);
  if(!person?.biography?.trim())return;
@@ -73,6 +112,7 @@ function openDetails(id,trigger){
  document.body.style.overflow='hidden';
  dialog.addEventListener('close',()=>{dialog.remove();document.body.style.overflow=overflow;trigger?.focus({preventScroll:true})},{once:true});
  dialog.showModal();
+ setupBiographyContents(dialog);
 }
 app.addEventListener('click',event=>{
  const details=event.target.closest('[data-details]');
