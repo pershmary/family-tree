@@ -34,7 +34,42 @@ function openPhoto(id,trigger){
  dialog.addEventListener('close',()=>{dialog.remove();trigger?.focus()},{once:true});
  dialog.showModal();
 }
+function biographyMarkup(text){
+ return text.trim().split(/\n\s*\n/).map(block=>{
+  const heading=block.match(/^#{1,6}\s+([^\n]+)$/);
+  if(heading)return `<h4>${esc(heading[1])}</h4>`;
+  if(/^\*[^\n]+\*$/.test(block))return `<p><em>${esc(block.slice(1,-1))}</em></p>`;
+  return `<p>${esc(block)}</p>`;
+ }).join('');
+}
+function openDetails(id,trigger){
+ const person=people.find(p=>p.id===id);
+ if(!person?.biography?.trim())return;
+ const year=(value,fallback)=>value?value.slice(0,4):fallback||'????';
+ const born=year(person.birthDate,person.birthYear);
+ const years=person.deathDate||person.deathYear||person.deceased?`${born} — ${year(person.deathDate,person.deathYear)}`:born==='????'?'Год рождения неизвестен':`${born} — н. в.`;
+ const path=person.photoFull||person.photo;
+ const photo=path&&(/^(https?:|data:|blob:)/.test(path)||path.startsWith(import.meta.env.BASE_URL)?path:`${import.meta.env.BASE_URL}${path.replace(/^\//,'')}`);
+ const dialog=document.createElement('dialog');
+ dialog.className='relative-panel';
+ dialog.setAttribute('aria-labelledby','relative-panel-name');
+ dialog.innerHTML=`<button type="button" class="relative-panel-close" aria-label="Закрыть подробную информацию" autofocus>×</button>${photo?`<img class="relative-panel-photo" src="${esc(photo)}" alt="${esc(person.name)}">`:`<div class="relative-panel-placeholder" role="img" aria-label="Фото отсутствует">${portrait}</div>`}<div class="relative-panel-content"><h2 id="relative-panel-name">${esc(person.name)}</h2><p class="relative-panel-years">${esc(years)}</p><section class="relative-panel-biography" aria-labelledby="relative-panel-biography-title"><h3 id="relative-panel-biography-title">Биография</h3>${biographyMarkup(person.biography)}</section></div>`;
+ document.body.append(dialog);
+ const image=dialog.querySelector('img');
+ if(image)image.onerror=()=>{image.outerHTML=`<div class="relative-panel-placeholder" role="img" aria-label="Фото недоступно">${portrait}</div>`};
+ dialog.querySelector('button').onclick=()=>dialog.close();
+ dialog.onclick=event=>{
+  const rect=dialog.getBoundingClientRect();
+  if(event.target===dialog&&(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom))dialog.close();
+ };
+ const overflow=document.body.style.overflow;
+ document.body.style.overflow='hidden';
+ dialog.addEventListener('close',()=>{dialog.remove();document.body.style.overflow=overflow;trigger?.focus({preventScroll:true})},{once:true});
+ dialog.showModal();
+}
 app.addEventListener('click',event=>{
+ const details=event.target.closest('[data-details]');
+ if(details){event.stopPropagation();openDetails(details.dataset.details,details);return;}
  const trigger=event.target.closest('[data-photo]');
  if(trigger){event.stopPropagation();openPhoto(trigger.dataset.photo,trigger)}
 },true);
@@ -90,7 +125,8 @@ function setupPersonPicker(){
 function card(p){
  if(p.unknown)return `<div class="person unknown-person" data-node="${esc(p.id)}" role="img" aria-label="Неизвестный родитель"><span class="portrait">${portrait}</span></div>`;
  const [surname, givenName, ...patronymic]=p.name.trim().split(/\s+/);
- return `<div class="person ${p.id===selected&&!p.alias?'selected':''}" data-node="${esc(p.nodeId||p.id)}" data-person="${esc(p.id)}" >${avatar(p,true)}<button class="person-details" aria-pressed="${p.id===selected}"><span class="person-name"><span class="person-surname">${esc(surname)}</span><span class="person-given-names"><span>${esc(givenName||'')}</span><span>${esc(patronymic.join(' '))}</span></span></span><span class="dates">${esc(lifeDates(p))}</span></button></div>`}
+ const more=p.biography?.trim()?`<button type="button" class="person-more" data-details="${esc(p.id)}" aria-haspopup="dialog" aria-label="Подробная информация: ${esc(p.name)}">Подробнее <span aria-hidden="true">→</span></button>`:'';
+ return `<div class="person ${p.id===selected&&!p.alias?'selected':''}" data-node="${esc(p.nodeId||p.id)}" data-person="${esc(p.id)}" >${avatar(p,true)}<button class="person-details" aria-pressed="${p.id===selected}"><span class="person-name"><span class="person-surname">${esc(surname)}</span><span class="person-given-names"><span>${esc(givenName||'')}</span><span>${esc(patronymic.join(' '))}</span></span></span><span class="dates">${esc(lifeDates(p))}</span></button>${more}</div>`}
 function layout(){
  const root=people.find(p=>p.id===selected), generations=new Map([[selected,0]]);
  const byId=new Map(people.map(p=>[p.id,p]));
@@ -202,7 +238,8 @@ function layout(){
 
 function render(origin=null){app.innerHTML=`<header><a class="brand" href="./" aria-label="Семейный архив"><span class="brand-symbol" aria-hidden="true">✳︎</span> Семейный архив</a>${personPicker()}</header><main><section class="tree-section" aria-label="Интерактивное семейное древо"><div class="viewport" id="viewport" tabindex="0" aria-label="Древо. Прокручивайте для просмотра родственников"><div class="tree" id="tree" style="zoom:${scale}"><svg class="connections" id="connections" aria-hidden="true"></svg><div class="generations">${layout()}</div></div></div><div class="tree-bottom"><span><i class="legend-line"></i> Родство <i class="legend-line marriage"></i> Брак</span><span class="hint">Нажмите на человека, чтобы перестроить древо</span><div class="zoom"><button id="minus" aria-label="Уменьшить">−</button><output>${Math.round(scale*100)}%</output><button id="plus" aria-label="Увеличить">+</button></div></div></section></main>`;
  setupPersonPicker();
- app.querySelectorAll('[data-person]').forEach(b=>b.onclick=()=>{
+ app.querySelectorAll('[data-person]').forEach(b=>b.onclick=event=>{
+  if(event.target.closest('.person-more'))return;
   if(selected===b.dataset.person)return;
   const viewport=document.querySelector('#viewport').getBoundingClientRect(),card=b.getBoundingClientRect();
   const origin={x:card.left+card.width/2-viewport.left,y:card.top+card.height/2-viewport.top};
