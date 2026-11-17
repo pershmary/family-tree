@@ -35,7 +35,7 @@ main { flex: 1; min-height: 0; margin: 0; display: flex; }
 .status-dot { background: var(--accent); }
 .reset { border-color: var(--accent); }
 .reset:hover, .zoom button:hover { background: #f7f3ff; }
-.person.selected { border-color: var(--accent); }
+.person.selected { border-color: var(--accent); background: #fff; }
 .connections .kinship-link {
   stroke: #dedee4;
   opacity: 1;
