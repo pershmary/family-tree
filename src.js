@@ -125,7 +125,7 @@ function setupPersonPicker(){
 function card(p){
  if(p.unknown)return `<div class="person unknown-person" data-node="${esc(p.id)}" role="img" aria-label="Неизвестный родитель"><span class="portrait">${portrait}</span></div>`;
  const [surname, givenName, ...patronymic]=p.name.trim().split(/\s+/);
- const more=p.biography?.trim()?`<button type="button" class="person-more" data-details="${esc(p.id)}" aria-haspopup="dialog" aria-label="Подробная информация: ${esc(p.name)}">Подробнее <span aria-hidden="true">→</span></button>`:'';
+ const more=p.biography?.trim()?`<button type="button" class="person-more" data-details="${esc(p.id)}" aria-haspopup="dialog" aria-label="Подробная информация: ${esc(p.name)}" title="Подробнее"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg></button>`:'';
  return `<div class="person ${p.id===selected&&!p.alias?'selected':''}" data-node="${esc(p.nodeId||p.id)}" data-person="${esc(p.id)}" >${avatar(p,true)}<button class="person-details" aria-pressed="${p.id===selected}"><span class="person-name"><span class="person-surname">${esc(surname)}</span><span class="person-given-names"><span>${esc(givenName||'')}</span><span>${esc(patronymic.join(' '))}</span></span></span><span class="dates">${esc(lifeDates(p))}</span></button>${more}</div>`}
 function layout(){
  const root=people.find(p=>p.id===selected), generations=new Map([[selected,0]]);
